@@ -1,24 +1,16 @@
 import os
 import cv2
-import time
-import argparse
-import multiprocessing
 import numpy as np
 import tensorflow as tf
-from matplotlib import pyplot as plt
-import cv2
-#%matplotlib inline
-
 
 from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as vis_util
 
-CWD_PATH = os.getcwd()
 
 # Path to frozen detection graph. This is the actual model that is used for the object detection.
-PATH_TO_CKPT = "training/output_inference_graph.pb"
+PATH_TO_CKPT = "racoon_inference_graph/frozen_inference_graph.pb"
 # List of the strings that is used to add correct label for each box.
-PATH_TO_LABELS = "training/object-detection.pbtxt"
+PATH_TO_LABELS = "raccoon_training/object-detection.pbtxt"
 
 NUM_CLASSES = 1
 
@@ -59,26 +51,8 @@ def detect_objects(image_np, sess, detection_graph):
     return image_np
 
 # First test on images
-PATH_TO_TEST_IMAGES_DIR = 'images'
-TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, 'raccoon-{}.jpg'.format(i)) for i in range(1, 2) ]
-
-# Size, in inches, of the output images.
-IMAGE_SIZE = (12, 8)
-
-
-
-def load_image_into_numpy_array(image):
-  (im_width, im_height) = image.size
-  return np.array(image.getdata()).reshape(
-      (im_height, im_width, 3)).astype(np.uint8)
-
-
-from PIL import Image
-for image_path in TEST_IMAGE_PATHS:
-    image = Image.open(image_path)
-    image_np = load_image_into_numpy_array(image)
-    plt.imshow(image_np)
-    print(image.size, image_np.shape)
+PATH_TO_TEST_IMAGES_DIR = 'test_images'
+TEST_IMAGE_PATHS = [ os.path.join(PATH_TO_TEST_IMAGES_DIR, 'raccoon-{}.jpg'.format(i)) for i in range(1, 4) ]
 
 #Load a frozen TF model 
 detection_graph = tf.Graph()
@@ -93,10 +67,7 @@ with detection_graph.as_default():
     with tf.Session(graph=detection_graph) as sess:
         print (TEST_IMAGE_PATHS)
         for image_path in TEST_IMAGE_PATHS:
-            image = Image.open(image_path)
-            image_np = load_image_into_numpy_array(image)
-            image_process = detect_objects(image_np, sess, detection_graph)
-            print(image_process.shape)
-            plt.figure(figsize=IMAGE_SIZE)
+            image = cv2.imread(image_path)
+            image_process = detect_objects(image, sess, detection_graph)
             cv2.imshow('image',image_process)
             cv2.waitKey(0)
